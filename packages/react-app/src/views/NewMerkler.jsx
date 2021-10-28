@@ -45,7 +45,7 @@ function NewMerkler({ readContracts, writeContracts, localProvider, userSigner, 
   const [amountRequired, setAmountRequired] = useState();
 
   const [tokenAddress, setTokenAddress] = useState();
-  const [decimals, setDecimals] = useState(18);
+  const [decimals, setDecimals] = useState(0);
   const [symbol, setSymbol] = useState("ETH");
   //const [allowance, setAllowance] = useState(0);
   const [assetType, setAssetType] = useState("ETH");
