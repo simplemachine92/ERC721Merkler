@@ -5,15 +5,16 @@ import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 contract Merkler is Initializable, ReentrancyGuard {
 
-    enum Asset { ETH, ERC20 }
+    enum Asset { ETH, ERC721 }
 
     string public treeFile;
     bytes32 public root;
     Asset public assetType;
-    IERC20 public token;
+    IERC721 public token;
     address public dropper;
     uint256 public deadline;
 
@@ -46,15 +47,26 @@ contract Merkler is Initializable, ReentrancyGuard {
     }
 
     function initializeTokenMerkler(bytes32 _root, address _tokenAddress, uint256 _amount, address _dropper, uint256 _deadline, string calldata _treefile) public initializer {
+        //require(_amount > 0, 'Must drop tokens.');
+        root = _root;
+        assetType = Asset.ERC721;
+        dropper = _dropper;
+        deadline = _deadline;
+        token = IERC721(_tokenAddress);
+        treeFile = _treefile;
+    }
+/* 
+    function initializeNFTokenMerkler(bytes32 _root, address _tokenAddress, uint256 _amount, address _dropper, uint256 _deadline, string calldata _treefile) public initializer {
         require(_amount > 0, 'Must drop tokens.');
         root = _root;
         assetType = Asset.ERC20;
         dropper = _dropper;
         deadline = _deadline;
-        token = IERC20(_tokenAddress);
-        token.transferFrom(msg.sender, address(this), _amount);
+        nft = IERC721(_tokenAddress);
+        tokenId = _amount;
+        //nft.transferFrom(msg.sender, address(this), _amount);
         treeFile = _treefile;
-    }
+    } */
 
     function redeem(uint256 index, address account, uint256 amount, bytes32[] calldata proof)
     public nonReentrant
@@ -66,8 +78,8 @@ contract Merkler is Initializable, ReentrancyGuard {
         if(assetType == Asset.ETH) {
           (bool sent, bytes memory data) = account.call{value: amount}("");
           require(sent, "Failed to send Ether");
-        } else if (assetType == Asset.ERC20) {
-          token.transfer(account, amount);
+        } else if (assetType == Asset.ERC721) {
+          token.transferFrom(address(this), account, amount);
         }
 
         emit Claimed(index, account, amount);
@@ -88,8 +100,8 @@ contract Merkler is Initializable, ReentrancyGuard {
     function withdraw() external nonReentrant {
       require(block.timestamp > deadline, 'before deadline');
 
-      if (assetType == Asset.ERC20 && token.balanceOf(address(this)) > 0) {
-        token.transfer(dropper, token.balanceOf(address(this)));
+      if (assetType == Asset.ERC721 && token.balanceOf(address(this)) > 0) {
+        token.transferFrom(address(this), dropper, token.balanceOf(address(this)));
       }
 
       if(address(this).balance > 0) {

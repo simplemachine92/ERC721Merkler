@@ -47,7 +47,7 @@ function NewMerkler({ readContracts, writeContracts, localProvider, userSigner, 
   const [tokenAddress, setTokenAddress] = useState();
   const [decimals, setDecimals] = useState(18);
   const [symbol, setSymbol] = useState("ETH");
-  const [allowance, setAllowance] = useState(0);
+  //const [allowance, setAllowance] = useState(0);
   const [assetType, setAssetType] = useState("ETH");
   const [balance, setBalance] = useState();
   const [deadline, setDeadline] = useState(Math.round(new Date().getTime() / 1000));
@@ -65,7 +65,7 @@ function NewMerkler({ readContracts, writeContracts, localProvider, userSigner, 
     }
   }, [address]);
 
-  const getAllowance = async () => {
+  /* const getAllowance = async () => {
     if (erc20Contract) {
       let newBalance = await erc20Contract.balanceOf(address);
       setBalance(newBalance);
@@ -77,7 +77,7 @@ function NewMerkler({ readContracts, writeContracts, localProvider, userSigner, 
     }
   };
 
-  useOnRepetition(getAllowance, { pollTime: 5000 });
+  useOnRepetition(getAllowance, { pollTime: 5000 }); */
 
   function hashToken(index, account, amount) {
     return Buffer.from(
@@ -105,15 +105,15 @@ function NewMerkler({ readContracts, writeContracts, localProvider, userSigner, 
         <Form.Item label="Type of Merkle drop" name="type">
           <Radio.Group onChange={e => setAssetType(e.target.value)} value={assetType}>
             <Radio value={"ETH"}>ETH</Radio>
-            <Radio value={"ERC20"}>ERC20</Radio>
+            <Radio value={"ERC721"}>ERC721</Radio>
           </Radio.Group>
         </Form.Item>
-        {assetType == "ERC20" && (
+        {assetType == "ERC721" && (
           <Form.Item
             label="Token Address"
             name="tokenAddress"
             tooltip={{
-              title: "The address of the ERC20 token you would like to drop",
+              title: "The address of the ERC721 token you would like to drop",
               icon: <InfoCircleOutlined />,
             }}
           >
@@ -121,23 +121,23 @@ function NewMerkler({ readContracts, writeContracts, localProvider, userSigner, 
               onChange={async e => {
                 if (ethers.utils.isAddress(e.target.value)) {
                   try {
-                    let newTokenContract = readContracts.ERC20.attach(e.target.value);
-                    let newDecimals = await newTokenContract.decimals();
-                    let newSymbol = await newTokenContract.symbol();
-                    let newAllowance = await newTokenContract.allowance(address, readContracts.MerkleDeployer.address);
-                    let newBalance = await newTokenContract.balanceOf(address);
+                    let newTokenContract = readContracts.ERC721.attach(e.target.value);
+                    let newDecimals = 0;
+                    //let newSymbol = await newTokenContract.symbol();
+                    //let newAllowance = await newTokenContract.allowance(address, readContracts.MerkleDeployer.address);
+                    //let newBalance = await newTokenContract.balanceOf(address);
                     setTokenAddress(e.target.value);
-                    setDecimals(newDecimals);
-                    setSymbol(newSymbol);
+                    //setDecimals(newDecimals);
+                    //setSymbol(newSymbol);
                     setErc20Contract(newTokenContract);
-                    setAllowance(newAllowance);
-                    setBalance(newBalance);
+                    //setAllowance(newAllowance);
+                    //setBalance(newBalance);
                     console.log(newDecimals, newSymbol);
                   } catch (e) {
                     console.log(e);
-                    setTokenAddress();
-                    setBalance();
-                    setAllowance();
+                    //setTokenAddress();
+                    //setBalance();
+                    //setAllowance();
                   }
                 }
               }}
@@ -260,31 +260,10 @@ function NewMerkler({ readContracts, writeContracts, localProvider, userSigner, 
           >
             Deploy ETH Merkler
           </Button>
-        ) : amountRequired > allowance ? (
+       ) : (
           <Button
             loading={deploying}
-            onClick={() => {
-              setDeploying(true);
-              try {
-                let signingContract = erc20Contract.connect(userSigner);
-                tx(
-                  signingContract.approve(
-                    writeContracts.MerkleDeployer.address,
-                    ethers.utils.parseUnits(amountRequired.toString(), decimals),
-                  ),
-                );
-              } catch (e) {
-                console.log(e);
-              }
-              setDeploying(false);
-            }}
-          >
-            {`Approve Merkle Deployer (${amountRequired} ${symbol})`}
-          </Button>
-        ) : (
-          <Button
-            loading={deploying}
-            disabled={!tokenAddress || !amountRequired || allowance.toString() == "0"}
+            //disabled={!tokenAddress || !amountRequired || allowance.toString() == "0"}
             onClick={() => {
               setDeploying(true);
               pinata

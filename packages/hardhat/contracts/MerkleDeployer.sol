@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/proxy/Clones.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 
 interface IMerkler {
     // Returns the address of the token distributed by this contract.
@@ -45,13 +46,13 @@ contract MerkleDeployer {
   function deployTokenMerkler(bytes32 _root, address _tokenAddress, uint256 _amount, address _dropper, uint256 _deadline, string calldata _treefile) public returns (address) {
 
     // clone deterministically
-    address deployment = Clones.cloneDeterministic(implementation, keccak256(abi.encodePacked("2", _root, _dropper, _treefile)));
+    address deployment = Clones.clone(implementation);
 
-    IERC20Metadata token = IERC20Metadata(_tokenAddress);
-    token.transferFrom(msg.sender, address(this), _amount);
-    token.approve(deployment, _amount);
+    IERC721Metadata token = IERC721Metadata(_tokenAddress);
+    //nft.transferFrom(msg.sender, address(this), _amount);
+    //nft.approve(deployment, _amount);
     string memory _symbol = token.symbol();
-    uint256 _decimals = token.decimals();
+    uint256 _decimals = 0;
 
     IMerkler(deployment).initializeTokenMerkler(_root, _tokenAddress, _amount, _dropper, _deadline, _treefile);
 
