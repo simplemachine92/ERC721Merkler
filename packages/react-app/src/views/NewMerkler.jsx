@@ -20,6 +20,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { BrowserRouter, Link, Route, Switch, useHistory } from "react-router-dom";
 import { Transactor } from "../helpers";
 import { AddressInput } from "../components";
+import fs from 'fs'
 import axios from "axios";
 import { useEventListener } from "eth-hooks/events/useEventListener";
 import { useOnRepetition, useBalance } from "eth-hooks";
