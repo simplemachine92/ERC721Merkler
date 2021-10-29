@@ -7,7 +7,15 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
+contract SimpleNFT {
+  function mint(address recipient) public returns (uint) {}
+
+  function getURI() public view returns (string memory) {}
+}
+
 contract Merkler is Initializable, ReentrancyGuard {
+
+  SimpleNFT mint;
 
     enum Asset { ETH, ERC721 }
 
@@ -53,6 +61,7 @@ contract Merkler is Initializable, ReentrancyGuard {
         dropper = _dropper;
         deadline = _deadline;
         token = IERC721(_tokenAddress);
+        mint = SimpleNFT(_tokenAddress);
         treeFile = _treefile;
     }
 /* 
@@ -79,7 +88,7 @@ contract Merkler is Initializable, ReentrancyGuard {
           (bool sent, bytes memory data) = account.call{value: amount}("");
           require(sent, "Failed to send Ether");
         } else if (assetType == Asset.ERC721) {
-          token.transferFrom(address(this), account, amount);
+          mint.mint(account);
         }
 
         emit Claimed(index, account, amount);
